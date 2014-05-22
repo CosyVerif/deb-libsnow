@@ -22,7 +22,7 @@ rm -rf $SRCDIR/debian;
 rm -rf *.gz *.build *.changes *.dsc;
 
 #tarball creation
-cd $SRCDIR && autoreconf && ./configure && cd ..;
+cd $SRCDIR && autoreconf -i && ./configure && cd ..;
 tar czfv $TARBALL.orig.tar.gz $SRCDIR;
 
 #creation of configuration files for debian packaging (and some cleaning)
@@ -48,3 +48,4 @@ cd .. && debuild -S -us -uc;
 ../correct_lintian.pl ../$TARBALL-1_source.build;
 # building deb packages
 debuild -us -uc;
+

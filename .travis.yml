@@ -1,0 +1,8 @@
+language: bash
+
+before_install:
+  - apt-get install dh-make
+  - apt-get install flex bison autoconf automake
+
+script:
+    - bash build_deb.sh
