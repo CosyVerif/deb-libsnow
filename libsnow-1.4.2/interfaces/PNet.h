@@ -91,7 +91,7 @@ public:
   /*********************END FRAMEKIT_SUPPORT *************************/
 
   // calculate static subclass info
-  void GenerateStaticSub ();
+  void GenerateStaticSub (bool doDynamicSS=true);
 
   // Adding an arc to the model
   Arc* AddArc (int placeId,int transId,Direction dir=Trans2Place,int id=-1,const string &valuation="") ;

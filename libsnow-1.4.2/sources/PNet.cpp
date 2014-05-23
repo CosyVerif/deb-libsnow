@@ -48,7 +48,7 @@ void PNet::FindOrderedClasses () {
 }
 
 // calculate static subclass info
-void PNet::GenerateStaticSub () {
+void PNet::GenerateStaticSub (bool doDynamicSS) {
   
   list<Variable *> lvar ;
   list<Variable *>::iterator varit;
@@ -78,28 +78,34 @@ void PNet::GenerateStaticSub () {
     subcforarc = LArc.getAssymetry(&(*clit)) ;
     subclasses.insert(subclasses.end(),subcforarc.begin(),subcforarc.end());
     subclasses  = calcSub::uniquePartition (subclasses);
-//     cerr << "subcstatic" ; calcSub::print(cerr,subclasses);
+     cerr << "subcstatic" ; calcSub::print(cerr,subclasses);
     // construct static subclasses
     LClasse.MakeStatic (subclasses,&(*clit));
  
     // places
     subcforplace = LPlace.getAssymetry(&(*clit)) ;
-//       cerr << "subcforplace" ; calcSub::print(cerr,subcforplace);
+       cerr << "subcforplace" ; calcSub::print(cerr,subcforplace);
     subclasses.insert(subclasses.end(),subcforplace.begin(),subcforplace.end());
     subclasses  = calcSub::uniquePartition (subclasses);
-//     cerr << "subc unique" ; calcSub::print(cerr,subclasses);
+     cerr << "subc unique" ; calcSub::print(cerr,subclasses);
 
+     if (doDynamicSS) {
     // subclasses is now a partition of the partition into static subs : it gives the separation into dynamic subs
      LClasse.MakeDynamic (subclasses,&(*clit));
-     // no dynamic subclasses ver 
-//     LClasse.MakeStatic (subclasses,&(*clit));
+     } else {
+       // no dynamic subclasses ver 
+       LClasse.MakeStatic (subclasses,&(*clit));
+     }
   }
-//  LPlace.RewriteWithStaticClasses () ; 
-  LPlace.RewriteWithDynamicClasses () ; 
+  if (doDynamicSS) {
+    LPlace.RewriteWithDynamicClasses () ; 
+  } else {
+    LPlace.RewriteWithStaticClasses () ; 
+  }
+
   LTrans.RewriteWithStaticClasses();
   LArc.RewriteWithStaticClasses();
 }
-
 
 // Export data structure to CAMI FORMAT in file specified by path
 int PNet::ExportToCami (const string &path) {
