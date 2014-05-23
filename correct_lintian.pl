@@ -31,7 +31,7 @@ close CONTROL;
 # Opening log file
 my$do_log = open LOG, ">", "../$ENV{LOGFILE}";
 if($do_log) {
-    my$date = localtime(time);
+    my$date = scalar localtime(time);
     print LOG "correct_lintian.pl log file. This log lists edits made by the script and warnings/errors that happened during\n
 debian package building. You may want to correct them and launch a new build.\n\nTimestamp: $date\n\n";
 }
