@@ -1,6 +1,6 @@
 # What are build goals 
 lib_LIBRARIES = libPNet.a
-
+bin_PROGRAMS = cami2gspn cami2smart snow
 
 #parsers : Lex Yacc
 AM_YFLAGS = -d 
@@ -39,6 +39,9 @@ HEADERFILES = ../interfaces/Arc.h          ../interfaces/Marking.h        ../int
 
 
 libPNet_a_SOURCES = $(CPPFILES) $(HEADERFILES) $(LYFILES)
+cami2gspn_SOURCES = $(CPPFILES) $(HEADERFILES) $(LYFILES) ../sources/cami2gspn.cc
+cami2smart_SOURCES = $(CPPFILES) $(HEADERFILES) $(LYFILES) ../sources/cami2smart.cc
+snow_SOURCES = $(CPPFILES) $(HEADERFILES) $(LYFILES) ../sources/snow.cpp
 
 # -g -Wextra
 
