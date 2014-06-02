@@ -1,0 +1,116 @@
+# Introduction
+#---
+# This configuration file lets you tweak the output package of
+# the _build\_deb.sh_ script. Note that all fields, except those in
+# the miscellaneous section, are <strong>mandatory</strong>. But it is still strongly
+# recommended to fill out every field in this file to have a proper
+# package.
+
+# This test file is filled to build a binary package and library packages
+# (named test, libtest and libtest-dev) at the same time, built from the
+# same sources on an amd64 computer.
+
+# Filling this configuration file
+#---
+# Before filling this configuration file, there are some general things
+# you should know.
+# - Paths are relative to the one specified in the DIRECTORYNAME field
+# - When asked for a list, you can put each item on the same line, separated
+# by a space, or you can write each item on a line beginning with a hyphen
+# '-', followed by a space and the item
+
+# Program informations
+#---
+
+# Name of the directory containing source files 
+DIRECTORYNAME	: libsnow-1.4.2
+
+# Desired name of the package containing binaries (can be left empty if you
+# are not building a binary package)
+BINPACKAGENAME	: snow
+
+# Desired name of the package containing libraries (can be left empty if you
+# are not building library packages)
+LIBPACKAGENAME	: libsnow
+
+# Program version
+VERSION : 1.4.2
+
+# Copyright : you must choose from one of these values :
+# - gpl
+# - gpl2
+# - gpl3
+# - lgpl
+# - lgpl2
+# - lgpl3
+# - artistic
+# - apache
+# - bsd
+# - mit
+# - a path leading to your own copyright file
+
+# Leaving this field empty will put an empty copyright file in your package
+COPYRIGHT : gpl
+
+# The type of package you want to build :
+#- s : build a binary package (eg. test\_2.3.7\_amd64.deb)
+#- l : build library packages (eg. libtest\_2.3.7\_amd64.deb
+# and libtest-dev\_2.3.7\_amd64.deb)
+#- s l : if you want to build the three previous packages
+PACKAGETYPE : s l
+
+# The list of packages your package depends on during the building process
+# (ie. when you call make).
+# You can specify some version constraints for these packages.
+# Accepted symbols are <, >, =, <= and >=.
+BUILDDEPENDS : 
+
+# The list of packages you need to have installed when using your program.
+PACKAGEDEPENDS : 
+# Files to include
+#-----
+
+# In this section, you can use filename expansion to avoid
+# listing a lot of files in the same directory like headers.
+# All paths must be relative to the directory name specified
+# previously.
+
+# List the binaries you want to include in your binary package
+BINARYNAMES : lib/cami2gspn lib/cami2smart lib/snow
+
+# List the libraries you want to include in your library package
+LIBNAMES : lib/libPNet.a
+
+# List the headers you want to include in the -dev package
+HEADERNAMES : - lib/*.h
+              - interfaces/*.h
+
+
+# Miscellaneous
+#--
+
+# The following values are used to have a "nice" package,
+# with someone to call if there is a problem, descriptions, and so on.
+# Therefore, those are not mandatory, but <strong>strongly recommended</strong>.
+# All paths must be relative to the directory name specified
+# previously.
+
+# Path to the description file of the binary package
+BINPACKAGEDESCFILE : ../snow.desc
+
+# Path to the description file of the library packages
+LIBPACKAGEDESCFILE : ../libsnow.desc
+
+# The name of this package's maintainer
+DEBFULLNAME : Redha Gouicem
+
+# The e-mail address of the maintainer of this package
+DEBEMAIL : redha.gouicem@gmail.com
+
+# Homepage's URL you want to specify in your package
+HOMEPAGE : http://www.john.doe
+
+# An output log filename to keep track of what edits the package
+# building script did, and what warnings it throwed.
+# Can be usefull to track some errors.
+LOGFILE : ../build_package.log

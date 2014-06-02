@@ -18,7 +18,7 @@ print "Starting configuration files edition due to lintian messages.\n";
 my$buildfilename = shift;
 open BUILDLOG, $buildfilename;
 $/ = undef;
-my$log = <BUILDLOG>;    # the entire building log
+my$log = <BUILDLOG>;    # the entire debuild log
 
 $log =~ m/Now running lintian\.\.\.\n(.*)\nFinished running lintian/s;
 my$lintianLog = $1;  # the lintian part of the log
@@ -27,34 +27,48 @@ my$lintianLog = $1;  # the lintian part of the log
 open CONTROL, "debian/control" or die($!);
 my$control = <CONTROL>;
 close CONTROL;
+# Opening debian/copyright
+open COPYRIGHT, "debian/copyright" or die($!);
+my$copyright = <COPYRIGHT>;
+close COPYRIGHT;
 
 # Opening log file
-my$do_log = open LOG, ">", "../$ENV{LOGFILE}";
+my$do_log = open LOG, ">", "$ENV{LOGFILE}";
 if($do_log) {
     my$date = scalar localtime(time);
-    print LOG "correct_lintian.pl log file. This log lists edits made by the script and warnings/errors that happened during\n
-debian package building. You may want to correct them and launch a new build.\n\nTimestamp: $date\n\n";
+    print LOG "correct_lintian.pl log file. This log lists edits made by the script and warnings/errors that happened during debian package building. You may want to correct them and launch a new build.\n\nTimestamp: $date\n\n";
 }
 
 # Adding descriptions
-#my$binpackdesc = $ENV{BINPACKAGEDESCFILE};
-#my$libpackdesc = $ENV{LIBPACKAGEDESCFILE};
-#my$libdevpackdesc = $ENV{LIBDEVPACKAGEFILE};
-#if ( $control =~ /Package: .*?[\s]+Architecture:/ && open DESC, $binpackdesc) {
-#    my$desc = <DESC>;
-#    $control =~ s/(Package: .*?[\s]+Architecture: .*?[\s]+Depends:.*?[\s]+Description:) <.*?>[\s]+ <.*?>/$1 $desc\n/s;
-#    close DESC;
-#}
-#if ( $control =~ /Package: .*?[\s]+Section: libs[\s]/ && open DESC, $libpackdesc) {
-#    my$desc = <DESC>;
-#    $control =~ s/(Package: .*?[\s]+Section: libs[\s]+Architecture:.*?[\s]+Depends:.*?[\s]+Description:) <.*?>[\s]+ <.*?>/$1 $desc\n/s;
-#    close DESC;
-#}
-#if ( $control =~ /Package: .*?-dev[\s]/ && open DESC, $libdevpackdesc) {
-#    my$desc = <DESC>;
-#    $control =~ s/(Package: .*?-dev[\s]+Section:.*?[\s]+Architecture:.*?[\s]+Depends:.*?[\s]+Description:) <.*?>[\s]+ <.*?>/$1 $desc\n/s;
-#    close DESC;
-#}
+my$binpackdesc = $ENV{BINPACKAGEDESCFILE};
+my$libpackdesc = $ENV{LIBPACKAGEDESCFILE};
+if ( open DESC, $binpackdesc ) {
+    my$desc = <DESC>;
+    $desc =~ s/\n/\n /gs;
+    my$name = $ENV{BINPACKAGENAME};
+    $control =~ s/(Package: $name[\s]+Architecture: .*?[\s]+Depends:.*?[\s]+Description:) <.*?>[\s]+ <.*?>/$1 $desc\n/s;
+    close DESC;
+}
+if ( open DESC, $libpackdesc ) {
+    my$desc = <DESC>;
+    my$name = $ENV{LIBPACKAGENAME};
+    my@descriptions = split /\n\n/, $desc;
+    $descriptions[0] =~ s/\n/\n /gs;
+    $descriptions[1] =~ s/\n/\n /gs;
+    $control =~ s/(Package: $name[\s]+Section: libs[\s]+Architecture:.*?[\s]+Depends:.*?[\s]+Description:) <.*?>[\s]+ <.*?>/$1 $descriptions[0]\n/s;
+    $control =~ s/(Package: $name-dev[\s]+Section:.*?[\s]+Architecture:.*?[\s]+Depends:.*?[\s]+Description:) <.*?>[\s]+ <.*?>/$1 $descriptions[1]\n/s;
+    close DESC;
+}
+# removing empty lines
+$control =~ s/\n{2,}/\n\n/sg;
+
+# Editing copyright
+my$url = $ENV{HOMEPAGE};
+#my@devnames = split /;/, $ENV{DEVNAMES};
+#my@devmails = split /;/, $ENV{DEVMAILS};
+#my@devyears = split /;/, $ENV{DEVYEARS};
+$copyright =~ s#(Source:) <url://example.com>#$1 $url#;
+#$copyright =~ s/(Copyright:) <.+?> <.+?>\n\s+? <.+?> <.+?>\n/$1 
 
 # Matching errors and correcting
 if ( $lintianLog =~ /package-needs-versioned-debhelper-build-depends (.*?)[\s]/ ) {
@@ -69,7 +83,7 @@ if ( $lintianLog =~ /out-of-date-standards-version \d\.\d\.\d \(current is (\d\.
 }
 if ( $lintianLog =~ /ancient-standards-version \d\.\d\.\d \(current is (\d\.\d\.\d)\)/ ) {
     my$std_version = $1;
-    $control =~ s/Standards-Version: \d\.\d\.\d/Standards-Version: $std_version/;
+    $control =~ s/Standards-Version: (\d\.\d\.\d)/Standards-Version: $std_version/;
     print LOG "standards version changed from $1 to $std_version\n" if $do_log;
 }
 if ( $lintianLog =~ /debhelper-but-no-misc-depends/ ) {
@@ -77,12 +91,12 @@ if ( $lintianLog =~ /debhelper-but-no-misc-depends/ ) {
     print LOG "added missing dependencies for $2 package\n" if $do_log;
 }
 if ( $lintianLog =~ /bad-homepage/ ) {
-    $control =~ s/(Homepage: )<.*?>/$1$ENV{HOMEPAGE}/;
-    print LOG "added homepage\n" if $do_log;
+    $control =~ s/(Homepage: )<.*?>/$1$ENV{HOMEPAGE}/g;
+    print LOG "updated homepage to $ENV{HOMEPAGE}\n" if $do_log;
 }
 if ( $lintianLog =~ /binary-without-manpage/ ) {
     print LOG "WARNING: Each binary in /usr/bin, /usr/sbin, /bin, /sbin or /usr/games should have a manual page.\n
-\tIf the man pages are provided by another package on which this package depends, lintian may not be able to determine\n
+\tIf the man pages are provided by another package on which this package depends, we may not be able to determine\n
 \tthat man pages are available. In this case, ignore this warning\n" if $do_log;
 }
 
@@ -90,9 +104,13 @@ if ( $lintianLog =~ /binary-without-manpage/ ) {
 # Writing in debian/control
 open CONTROL, ">", "debian/control" or die($!);
 print CONTROL $control;
+# Writing in debian/copyright
+open COPYRIGHT, ">", "debian/copyright" or die($!);
+print COPYRIGHT $copyright;
 
 # Closing files
 close CONTROL;
+close COPYRIGHT;
 close BUILDLOG;
 close LOG if $do_log;
 
