@@ -5,4 +5,4 @@ before_install:
   - sudo apt-get install flex bison autoconf automake
 
 script:
-    - bash build-packages-snow.sh
+    - bash build_deb.sh
